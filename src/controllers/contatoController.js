@@ -1,80 +1,69 @@
-const mongoose = require('mongoose');
-const validator = require('validator');
+const Contato = require('../models/ContatoModel');
 
-const ContatoSchema = new mongoose.Schema({
-  nome: { type: String, required: true },
-  sobrenome: { type: String, required: false, default: '' },
-  email: { type: String, required: false, default: '' },
-  telefone: { type: String, required: false, default: '' },
-  criadoEm: { type: Date, default: Date.now },
-});
-
-const ContatoModel = mongoose.model('Contato', ContatoSchema);
-
-function Contato(body) {
-  this.body = body;
-  this.errors = [];
-  this.contato = null;
-}
-
-Contato.prototype.register = async function() {
-  this.valida();
-  if(this.errors.length > 0) return;
-  this.contato = await ContatoModel.create(this.body);
+exports.index = (req, res) => {
+  res.render('contato', {
+    contato: {}
+  });
 };
 
-Contato.prototype.valida = function() {
-  this.cleanUp();
+exports.register = async(req, res) => {
+  try {
+    const contato = new Contato(req.body);
+    await contato.register();
 
-  // Validação
-  // O e-mail precisa ser válido
-  if(this.body.email && !validator.isEmail(this.body.email)) this.errors.push('E-mail inválido');
-  if(!this.body.nome) this.errors.push('Nome é um campo obrigatório.');
-  if(!this.body.email && !this.body.telefone) {
-    this.errors.push('Pelo menos um contato precisa ser enviado: e-mail ou telefone.');
-  }
-};
-
-Contato.prototype.cleanUp = function() {
-  for(const key in this.body) {
-    if(typeof this.body[key] !== 'string') {
-      this.body[key] = '';
+    if(contato.errors.length > 0) {
+      req.flash('errors', contato.errors);
+      req.session.save(() => res.redirect('back'));
+      return;
     }
+
+    req.flash('success', 'Contato registrado com sucesso.');
+    req.session.save(() => res.redirect(`/contato/index/${contato.contato._id}`));
+    return;
+  } catch(e) {
+    console.log(e);
+    return res.render('404');
   }
-
-  this.body = {
-    nome: this.body.nome,
-    sobrenome: this.body.sobrenome,
-    email: this.body.email,
-    telefone: this.body.telefone,
-  };
 };
 
-Contato.prototype.edit = async function(id) {
-  if(typeof id !== 'string') return;
-  this.valida();
-  if(this.errors.length > 0) return;
-  this.contato = await ContatoModel.findByIdAndUpdate(id, this.body, { new: true });
+exports.editIndex = async function(req, res) {
+  if(!req.params.id) return res.render('404');
+
+  const contato = await Contato.buscaPorId(req.params.id);
+  if(!contato) return res.render('404');
+
+  res.render('contato', { contato });
 };
 
-// Métodos estáticos
-Contato.buscaPorId = async function(id) {
-  if(typeof id !== 'string') return;
-  const contato = await ContatoModel.findById(id);
-  return contato;
+exports.edit = async function(req, res) {
+  try {
+    if(!req.params.id) return res.render('404');
+    const contato = new Contato(req.body);
+    await contato.edit(req.params.id);
+
+    if(contato.errors.length > 0) {
+      req.flash('errors', contato.errors);
+      req.session.save(() => res.redirect('back'));
+      return;
+    }
+
+    req.flash('success', 'Contato editado com sucesso.');
+    req.session.save(() => res.redirect(`/contato/index/${contato.contato._id}`));
+    return;
+  } catch(e) {
+    console.log(e);
+    res.render('404');
+  }
 };
 
-Contato.buscaContatos = async function() {
-  const contatos = await ContatoModel.find()
-    .sort({ criadoEm: -1 });
-  return contatos;
+exports.delete = async function(req, res) {
+  if(!req.params.id) return res.render('404');
+
+  const contato = await Contato.delete(req.params.id);
+  if(!contato) return res.render('404');
+
+  req.flash('success', 'Contato apagado com sucesso.');
+  req.session.save(() => res.redirect('back'));
+  return;
 };
 
-Contato.delete = async function(id) {
-  if(typeof id !== 'string') return;
-  const contato = await ContatoModel.findOneAndDelete({_id: id});
-  return contato;
-};
-
-
-module.exports = Contato;
