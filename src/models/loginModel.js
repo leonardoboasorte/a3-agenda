@@ -22,7 +22,7 @@ class Login {
     this.user = await LoginModel.findOne({ email: this.body.email });
 
     if(!this.user) {
-      this.errors.push('Usuário não existe.');
+      this.errors.push('Usuário inválido.');
       return;
     }
 
@@ -61,7 +61,7 @@ class Login {
 
     // A senha precisa ter entre 3 e 50
     if(this.body.password.length < 3 || this.body.password.length > 50) {
-      this.errors.push('A senha precisa ter entre 3 e 50 caracteres.');
+      this.errors.push('Insira uma senha de 6 a 18 caracteres');
     }
   }
 
