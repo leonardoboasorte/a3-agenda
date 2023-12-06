@@ -2,7 +2,7 @@ require('dotenv').config();
 const express = require('express');
 const app = express();
 const mongoose = require('mongoose');
-mongoose.connect(process.env.MONGODB_URI,
+mongoose.connect('mongodb+srv://leoboasortedev:1012213800@cluster0.vhbewvz.mongodb.net/?retryWrites=true&w=majority',
   {
     useNewUrlParser: true,
     useUnifiedTopology: true,
@@ -29,7 +29,7 @@ app.use(express.static(path.resolve(__dirname, 'public')));
 
 const sessionOptions = session({
   secret: 'akasdfj0út23453456+54qt23qv  qwf qwer qwer qewr asdasdasda a6()',
-  store: MongoStore.create({ mongoUrl: process.env.MONGODB_URI }),
+  store: MongoStore.create({ mongoUrl: 'mongodb+srv://leoboasortedev:1012213800@cluster0.vhbewvz.mongodb.net/?retryWrites=true&w=majority' }),
   resave: false,
   saveUninitialized: false,
   cookie: {
