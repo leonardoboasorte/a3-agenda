@@ -1,6 +1,7 @@
 # a3-agenda
 
 Descrição do Projeto
+
 O A3 Agenda é uma aplicação web desenvolvida para gerenciar e organizar tarefas e compromissos. Com uma interface amigável e intuitiva, a aplicação permite que os usuários criem, editem e excluam eventos, além de fornecer recursos avançados, como autenticação de usuários.
 
 Tecnologias Utilizadas
